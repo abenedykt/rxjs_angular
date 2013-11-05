@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Angular app with reactive js</title>
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/rxjs/2.2.3/rx.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/rxjs/2.2.3/rx.time.js"></script>
+    <script src="rx.angular.js"></script>
+    <style>
+        ul#log{
+            list-style: none;
+            margin-top:100px;
+        }
+        ul#log li{
+            display : inline-block;
+            float: left;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+<div ng-app='wmsMapSettings' id="sfkjhsjkfsjkf">
+    <ul ng-controller="wmsMapControl">
+        <li>adres usługi<input ng-model="url" ng-change="checkUrl()" required type="url"><p>{{urlState}}</p></li>
+    </ul>
+</div>
+
+<ul id="log"></ul>
+<script>
+
+    var wmsMapSettings = angular.module('wmsMapSettings', []);
+
+    function wmsMapControl($scope, $http) {
+
+        $scope.url = "http://some.url.in.the.wild:8080";
+
+        $scope.checkUrl = function () {
+            $('#log').append('<li>change</li>');
+        }
+
+        var validateUrl = function(){
+
+            $http.jsonp({method:'GET',url:$scope.url})
+                    .success(function(){
+                        $scope.urlState = 'ok';
+                    })
+                    .error(function(){
+                        $scope.urlState = 'zły url';
+                    });
+
+            $('#log').append('<li> !!validate!! </li>');
+        }
+
+        Rx.watchToObservable($scope,'url')
+                .filter(function(txt){ return txt != undefined &&  txt.length>=8; })
+                .throttle(500)
+                .subscribe(validateUrl);
+    }
+
+//    angular.bootstrap($('#sfkjhsjkfsjkf'));
+</script>
+
+</body>
+</html>
+
+<!--http://hueypetersen.com/posts/2013/06/26/helper-functions-for-rx-and-angular/-->
